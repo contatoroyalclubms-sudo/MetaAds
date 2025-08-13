@@ -1,6 +1,54 @@
+export interface TimerSession {
+  id: string
+  type: 'WORK' | 'BREAK'
+  duration: number
+  startTime: Date
+  endTime?: Date | null
+  completed: boolean
+  userId: string
+  taskId?: string | null
+}
+
+export interface AnalyticsData {
+  totalTasks: number
+  completedTasks: number
+  totalProjects: number
+  totalTimeSpent: number
+  tasksByStatus: {
+    pending: number
+    inProgress: number
+    completed: number
+  }
+  tasksByPriority: {
+    low: number
+    medium: number
+    high: number
+  }
+  productivityTrend: {
+    date: string
+    completed: number
+    created: number
+  }[]
+  timeByProject: {
+    projectId: string
+    projectTitle: string
+    totalTime: number
+  }[]
+}
+
+export interface CalendarEvent {
+  id: string
+  title: string
+  date: Date
+  type: 'task' | 'project'
+  status: TaskStatus | ProjectStatus
+  priority: Priority
+}
+
 export type ProjectStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED'
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED'
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH'
+export type ViewMode = 'list' | 'grid' | 'kanban' | 'calendar' | 'timeline'
 
 export interface User {
   id: string

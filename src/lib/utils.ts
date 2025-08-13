@@ -39,6 +39,17 @@ export function formatDuration(minutes: number) {
   return `${hours}h ${mins}m`
 }
 
+export function formatDateTime(date: Date | string): string {
+  const d = new Date(date)
+  return d.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 export function getPriorityColor(priority: 'LOW' | 'MEDIUM' | 'HIGH') {
   switch (priority) {
     case 'HIGH':

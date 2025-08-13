@@ -10,6 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search, Filter, Calendar, List, Grid3X3, Clock } from 'lucide-react'
 import { useTaskStore } from '@/stores/taskStore'
 import { useProjectStore } from '@/stores/projectStore'
+import type { TaskStatus, Priority, TaskWithProject, ViewMode } from '@/types'
+import KanbanBoard from '@/components/tasks/KanbanBoard'
+import CalendarView from '@/components/tasks/CalendarView'
+import TimelineView from '@/components/tasks/TimelineView'
 
 export default function TasksPage() {
   const { data: session, status } = useSession()
@@ -21,7 +25,29 @@ export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [projectFilter, setProjectFilter] = useState('all')
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'kanban'>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+
+  const handleViewChange = (view: ViewMode) => {
+    setViewMode(view)
+  }
+
+  const handleTaskStatusChange = async (taskId: string, newStatus: TaskStatus) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (response.ok) {
+        fetchTasks()
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error)
+    }
+  }
 
   useEffect(() => {
     if (status === 'loading') return
@@ -162,7 +188,7 @@ export default function TasksPage() {
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setViewMode('list')}
+                onClick={() => handleViewChange('list')}
                 className="rounded-r-none"
               >
                 <List className="h-4 w-4" />
@@ -170,7 +196,7 @@ export default function TasksPage() {
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setViewMode('grid')}
+                onClick={() => handleViewChange('grid')}
                 className="rounded-none border-x"
               >
                 <Grid3X3 className="h-4 w-4" />
@@ -178,10 +204,26 @@ export default function TasksPage() {
               <Button
                 variant={viewMode === 'kanban' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setViewMode('kanban')}
-                className="rounded-l-none"
+                onClick={() => handleViewChange('kanban')}
+                className="rounded-none border-x"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('calendar')}
+                className="rounded-none border-x"
               >
                 <Calendar className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'timeline' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('timeline')}
+                className="rounded-l-none"
+              >
+                <Clock className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -212,6 +254,12 @@ export default function TasksPage() {
               Create Task
             </Button>
           </div>
+        ) : viewMode === 'kanban' ? (
+          <KanbanBoard tasks={filteredTasks} onTaskStatusChange={handleTaskStatusChange} />
+        ) : viewMode === 'calendar' ? (
+          <CalendarView tasks={filteredTasks} />
+        ) : viewMode === 'timeline' ? (
+          <TimelineView tasks={filteredTasks} />
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
             {filteredTasks.map((task) => (
